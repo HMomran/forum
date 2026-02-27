@@ -6,7 +6,7 @@ import "real-time-forum/models"
 // reversed to chronological order before returning).
 func GetMessages(myID, withID string, limit, offset int) ([]models.Message, error) {
 	rows, err := DB.Query(`
-		SELECT m.id, m.sender_id, m.receiver_id, u.nickname, m.content, m.created_at
+		SELECT m.id, m.sender_id, m.receiver_id, u.nickname, m.content, m.image_url, m.created_at
 		FROM messages m
 		JOIN users u ON u.id = m.sender_id
 		WHERE (m.sender_id = ? AND m.receiver_id = ?)
@@ -23,7 +23,7 @@ func GetMessages(myID, withID string, limit, offset int) ([]models.Message, erro
 	msgs := []models.Message{}
 	for rows.Next() {
 		var m models.Message
-		rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.SenderName, &m.Content, &m.CreatedAt)
+		rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.SenderName, &m.Content, &m.ImageURL, &m.CreatedAt)
 		msgs = append(msgs, m)
 	}
 
@@ -35,10 +35,10 @@ func GetMessages(myID, withID string, limit, offset int) ([]models.Message, erro
 }
 
 // CreateMessage inserts a new private message.
-func CreateMessage(id, senderID, receiverID, content string) error {
+func CreateMessage(id, senderID, receiverID, content, imageURL string) error {
 	_, err := DB.Exec(
-		`INSERT INTO messages (id, sender_id, receiver_id, content) VALUES (?, ?, ?, ?)`,
-		id, senderID, receiverID, content,
+		`INSERT INTO messages (id, sender_id, receiver_id, content, image_url) VALUES (?, ?, ?, ?, ?)`,
+		id, senderID, receiverID, content, imageURL,
 	)
 	return err
 }
@@ -47,10 +47,10 @@ func CreateMessage(id, senderID, receiverID, content string) error {
 func GetMessageByID(msgID string) (models.Message, error) {
 	var m models.Message
 	err := DB.QueryRow(`
-		SELECT m.id, m.sender_id, m.receiver_id, u.nickname, m.content, m.created_at
+		SELECT m.id, m.sender_id, m.receiver_id, u.nickname, m.content, m.image_url, m.created_at
 		FROM messages m JOIN users u ON u.id = m.sender_id
 		WHERE m.id = ?`, msgID,
-	).Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.SenderName, &m.Content, &m.CreatedAt)
+	).Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.SenderName, &m.Content, &m.ImageURL, &m.CreatedAt)
 	return m, err
 }
 

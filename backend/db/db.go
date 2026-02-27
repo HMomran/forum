@@ -19,6 +19,7 @@ func Init(path string) {
 		log.Fatal("failed to connect to database:", err)
 	}
 	createTables()
+	migrate()
 	log.Println("database ready")
 }
 
@@ -47,6 +48,7 @@ func createTables() {
 			title      TEXT NOT NULL,
 			content    TEXT NOT NULL,
 			category   TEXT NOT NULL,
+			image_url  TEXT NOT NULL DEFAULT '',
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		)`,
@@ -63,7 +65,8 @@ func createTables() {
 			id          TEXT PRIMARY KEY,
 			sender_id   TEXT NOT NULL,
 			receiver_id TEXT NOT NULL,
-			content     TEXT NOT NULL,
+			content     TEXT NOT NULL DEFAULT '',
+			image_url   TEXT NOT NULL DEFAULT '',
 			created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (sender_id)   REFERENCES users(id),
 			FOREIGN KEY (receiver_id) REFERENCES users(id)
@@ -83,5 +86,17 @@ func createTables() {
 		if _, err := DB.Exec(q); err != nil {
 			log.Fatal("failed to create table:", err)
 		}
+	}
+}
+
+
+
+func migrate() {
+	migrations := []string{
+		`ALTER TABLE messages ADD COLUMN image_url TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE posts    ADD COLUMN image_url TEXT NOT NULL DEFAULT ''`,
+	}
+	for _, q := range migrations {
+		DB.Exec(q) 
 	}
 }

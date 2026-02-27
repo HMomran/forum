@@ -18,6 +18,7 @@ type Post struct {
 	Title     string `json:"title"`
 	Content   string `json:"content"`
 	Category  string `json:"category"`
+	ImageURL  string `json:"image_url"`
 	CreatedAt string `json:"created_at"`
 	Upvotes   int    `json:"upvotes"`
 	Downvotes int    `json:"downvotes"`
@@ -39,5 +40,6 @@ type Message struct {
 	ReceiverID string `json:"receiver_id"`
 	SenderName string `json:"sender_name"`
 	Content    string `json:"content"`
+	ImageURL   string `json:"image_url"`
 	CreatedAt  string `json:"created_at"`
 }

@@ -40,6 +40,7 @@ type WSMessage struct {
 type SendMessagePayload struct {
 	ReceiverID string `json:"receiver_id"`
 	Content    string `json:"content"`
+	ImageURL   string `json:"image_url"`
 }
 
 func ServeWS(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +69,6 @@ func ServeWS(w http.ResponseWriter, r *http.Request) {
 		case old.send <- kick:
 		default:
 		}
-		// Safety-net: close the raw conn after 2 s in case the client never closes it.
 		go func(old *Client) {
 			time.Sleep(2 * time.Second)
 			old.conn.Close()
@@ -78,7 +78,6 @@ func ServeWS(w http.ResponseWriter, r *http.Request) {
 	hub.mu.Unlock()
 
 	broadcastPresence()
-
 	sendUserList(client)
 
 	go client.writePump()
@@ -124,12 +123,20 @@ func (c *Client) writePump() {
 
 func (c *Client) handleSendMessage(raw json.RawMessage) {
 	var p SendMessagePayload
-	if err := json.Unmarshal(raw, &p); err != nil || p.Content == "" || p.ReceiverID == "" {
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return
+	}
+
+	// Must have either text content or an image (or both)
+	if p.Content == "" && p.ImageURL == "" {
+		return
+	}
+	if p.ReceiverID == "" {
 		return
 	}
 
 	msgID := uuid.NewString()
-	if err := db.CreateMessage(msgID, c.userID, p.ReceiverID, p.Content); err != nil {
+	if err := db.CreateMessage(msgID, c.userID, p.ReceiverID, p.Content, p.ImageURL); err != nil {
 		log.Println("insert message error:", err)
 		return
 	}
@@ -181,6 +188,26 @@ func broadcastPresence() {
 
 	for _, c := range allClients {
 		sendUserList(c)
+	}
+}
+
+// BroadcastAll sends a WS envelope to every connected client.
+func BroadcastAll(msgType string, payload any) {
+	envelope, _ := json.Marshal(WSMessage{
+		Type:    msgType,
+		Payload: mustMarshal(payload),
+	})
+	hub.mu.RLock()
+	clients := make([]*Client, 0, len(hub.clients))
+	for _, c := range hub.clients {
+		clients = append(clients, c)
+	}
+	hub.mu.RUnlock()
+	for _, c := range clients {
+		select {
+		case c.send <- envelope:
+		default:
+		}
 	}
 }
 

@@ -20,6 +20,19 @@ func jsonOK(w http.ResponseWriter, code int, payload any) {
 }
 
 func userIDFromSession(r *http.Request) string {
+	// 1. Per-tab header (sent by authFetch on the frontend)
+	if t := r.Header.Get("X-Session-Token"); t != "" {
+		if id := db.GetUserIDByToken(t); id != "" {
+			return id
+		}
+	}
+	// 2. WS query param
+	if t := r.URL.Query().Get("token"); t != "" {
+		if id := db.GetUserIDByToken(t); id != "" {
+			return id
+		}
+	}
+	// 3. Fallback: cookie (single-browser usage)
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		return ""
@@ -33,9 +46,15 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("session_token")
-	if err == nil {
-		db.DeleteSessionByToken(cookie.Value)
+	// Try header token first (per-tab sessions), then cookie
+	token := r.Header.Get("X-Session-Token")
+	if token == "" {
+		if cookie, err := r.Cookie("session_token"); err == nil {
+			token = cookie.Value
+		}
+	}
+	if token != "" {
+		db.DeleteSessionByToken(token)
 	}
 
 	http.SetCookie(w, &http.Cookie{

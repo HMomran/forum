@@ -45,6 +45,14 @@ func Vote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	upvotes, downvotes, userVote := db.GetVoteSummary(req.PostID, userID)
+
+	// Notify all connected clients about the updated vote counts
+	BroadcastAll("vote_update", map[string]any{
+		"post_id":   req.PostID,
+		"upvotes":   upvotes,
+		"downvotes": downvotes,
+	})
+
 	jsonOK(w, http.StatusOK, map[string]int{
 		"upvotes":   upvotes,
 		"downvotes": downvotes,

@@ -114,6 +114,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		Title      string   `json:"title"`
 		Content    string   `json:"content"`
 		Categories []string `json:"categories"`
+		ImageURL   string   `json:"image_url"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		jsonError(w, "invalid request body", http.StatusBadRequest)
@@ -122,6 +123,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 
 	req.Title = strings.TrimSpace(req.Title)
 	req.Content = strings.TrimSpace(req.Content)
+	req.ImageURL = strings.TrimSpace(req.ImageURL)
 
 	cleaned := []string{}
 	for _, c := range req.Categories {
@@ -131,14 +133,19 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if req.Title == "" || req.Content == "" || len(cleaned) == 0 {
-		jsonError(w, "title, content and at least one category are required", http.StatusBadRequest)
+	if req.Title == "" || len(cleaned) == 0 {
+		jsonError(w, "title and at least one category are required", http.StatusBadRequest)
+		return
+	}
+	
+	if req.Content == "" && req.ImageURL == "" {
+		jsonError(w, "post must have content or an image", http.StatusBadRequest)
 		return
 	}
 
 	category := strings.Join(cleaned, ",")
 	id := uuid.NewString()
-	if err := db.CreatePost(id, userID, req.Title, req.Content, category); err != nil {
+	if err := db.CreatePost(id, userID, req.Title, req.Content, category, req.ImageURL); err != nil {
 		jsonError(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -149,5 +156,6 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	BroadcastAll("new_post", post)
 	jsonOK(w, http.StatusCreated, post)
 }

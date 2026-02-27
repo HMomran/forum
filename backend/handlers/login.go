@@ -67,6 +67,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	user.Password = ""
 	jsonOK(w, http.StatusOK, map[string]any{
 		"message": "login successful",
+		"token":   token,
 		"user":    user,
 	})
 }
