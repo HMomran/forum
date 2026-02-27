@@ -49,7 +49,7 @@ function validate() {
     errors.email.textContent = 'E-mail is required.';
     valid = false;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
-    errors.email.textContent = 'Enter a valid e-mail address.';
+    errors.email.textContent = 'Enter a valid e-mail address: Demo@gmail.com';
     valid = false;
   }
   const age = parseInt(ageInput.value, 10);
@@ -57,15 +57,24 @@ function validate() {
     errors.age.textContent = 'Age is required.';
     valid = false;
   } else if (isNaN(age) || age < 13 || age > 120) {
-    errors.age.textContent = 'Age must be between 13 and 120.';
+    errors.age.textContent = 'Age must greater than 13.';
     valid = false;
   }
   if (!getGender()) {
     errors.gender.textContent = 'Please select a gender.';
     valid = false;
   }
-  if (passwordInput.value.length < 8) {
+  if (!passwordInput.value) {
+    errors.password.textContent = 'Password is required.';
+    valid = false;
+  } else if (passwordInput.value.length < 8) {
     errors.password.textContent = 'Password must be at least 8 characters.';
+    valid = false;
+  } else if (!/[a-z]/.test(passwordInput.value)) {
+    errors.password.textContent = 'Password must contain at least one lowercase letter.';
+    valid = false;
+  } else if (!/[A-Z]/.test(passwordInput.value)) {
+    errors.password.textContent = 'Password must contain at least one uppercase letter.';
     valid = false;
   }
   if (confirmInput.value !== passwordInput.value) {
@@ -99,17 +108,38 @@ registerForm.addEventListener('submit', async (e) => {
       body   : JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    let data = {};
+    try { data = await res.json(); } catch { /* non-JSON body */ }
 
     if (!res.ok) {
-      formError.textContent = data.error || 'Registration failed. Please try again.';
+      if (res.status === 409) {
+        const msg = data.error || '';
+        if (msg.includes('nickname')) {
+          errors.nickname.textContent = 'This nickname is already taken.';
+          formError.textContent = 'That nickname is already in use — please choose a different one.';
+          nicknameInput.focus();
+          nicknameInput.select();
+        } else if (msg.includes('email')) {
+          errors.email.textContent = 'This email is already registered.';
+          formError.textContent = 'An account with that email already exists — try logging in instead.';
+          emailInput.focus();
+          emailInput.select();
+        } else {
+          formError.textContent = msg || 'Account already exists.';
+        }
+      } else if (res.status === 400) {
+        formError.textContent = data.error || 'Please check all fields and try again.';
+      } else {
+        formError.textContent = data.error || 'Registration failed. Please try again.';
+      }
       return;
     }
 
     showPage('login');
 
   } catch {
-    formError.textContent = 'Network error. Please try again.';
+    if (typeof showServerError === 'function') showServerError();
+    else formError.textContent = 'Could not connect to the server. Please try again.';
   }
 });
 

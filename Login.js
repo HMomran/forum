@@ -41,20 +41,29 @@ loginForm.addEventListener('submit', async (e) => {
       body   : JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    let data = {};
+    try { data = await res.json(); } catch { /* non-JSON body */ }
 
     if (!res.ok) {
-      loginFormError.textContent = data.error || 'Invalid credentials. Please try again.';
+      if (res.status === 401) {
+        loginFormError.textContent = 'No account found with those credentials. Please check your nickname/email and password.';
+      } else if (res.status === 400) {
+        loginFormError.textContent = data.error || 'Please fill in all fields.';
+      } else {
+        loginFormError.textContent = data.error || 'Something went wrong. Please try again.';
+      }
       return;
     }
 
-    sessionStorage.setItem('user', JSON.stringify(data.user));
+    sessionStorage.setItem('user',  JSON.stringify(data.user));
+    sessionStorage.setItem('token', data.token);
     document.getElementById('navbar-username').textContent = data.user.nickname;
     showPage('app');
 
   } catch (err) {
     console.error('Login error:', err);
-    loginFormError.textContent = 'Network error. Please try again.';
+    if (typeof showServerError === 'function') showServerError();
+    else loginFormError.textContent = 'Could not connect to the server. Please try again.';
   }
 });
 
@@ -65,10 +74,11 @@ goToRegisterLink.addEventListener('click', (e) => {
 
 logoutBtn.addEventListener('click', async () => {
   try {
-    await fetch('/api/logout', { method: 'POST' });
+    await authFetch('/api/logout', { method: 'POST' });
   } catch { /* ignore */ }
 
   sessionStorage.removeItem('user');
+  sessionStorage.removeItem('token');
   document.getElementById('navbar-username').textContent = '';
   showPage('login');
 });

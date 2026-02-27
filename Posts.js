@@ -9,9 +9,68 @@ const postsFeed          = document.getElementById('posts-feed');
 const postsFeedEmpty     = document.getElementById('posts-feed-empty');
 const specialFilterBtns  = document.querySelectorAll('.filter-btn[data-filter]');
 const categoryFilterBtns = document.querySelectorAll('.filter-btn[data-category]');
+const postImageBtn       = document.getElementById('post-image-btn');
+const postImageInput     = document.getElementById('post-image-input');
+const postImagePreview   = document.getElementById('post-image-preview');
+const postImagePreviewImg= document.getElementById('post-image-preview-img');
+const postImageRemoveBtn = document.getElementById('post-image-remove-btn');
 
 let activeSpecialFilter = 'all';
 let activeCategories    = new Set();
+let pendingPostImageURL = null;
+
+
+postImageBtn.addEventListener('click', () => {
+  postImageInput.value = '';
+  postImageInput.click();
+});
+
+postImageInput.addEventListener('change', async () => {
+  const file = postImageInput.files[0];
+  if (!file) return;
+
+  postImageBtn.disabled = true;
+  postImageBtn.classList.add('uploading');
+
+  try {
+    const url = await uploadImage(file);
+    if (!url) return;
+    pendingPostImageURL = url;
+    postImagePreviewImg.src = url;
+    postImagePreview.hidden = false;
+  } finally {
+    postImageBtn.disabled = false;
+    postImageBtn.classList.remove('uploading');
+  }
+});
+
+postImageRemoveBtn.addEventListener('click', clearPostImagePreview);
+
+function clearPostImagePreview() {
+  pendingPostImageURL = null;
+  postImagePreview.hidden = true;
+  postImagePreviewImg.src = '';
+  postImageInput.value = '';
+}
+
+
+
+async function uploadImage(file) {
+  const form = new FormData();
+  form.append('image', file);
+  try {
+    const res = await authFetch('/api/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Upload failed');
+      return null;
+    }
+    return data.url;
+  } catch {
+    alert('Upload failed. Please try again.');
+    return null;
+  }
+}
 
 postContentInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -37,7 +96,7 @@ async function loadPosts() {
   }
 
   try {
-    const res  = await fetch(url);
+    const res  = await authFetch(url);
     const data = await res.json();
 
     if (!res.ok) {
@@ -72,6 +131,12 @@ function buildPostCard(post) {
   const upActive   = post.user_vote ===  1 ? 'vote-btn--active' : '';
   const downActive = post.user_vote === -1 ? 'vote-btn--active' : '';
 
+  const imgHTML = post.image_url
+    ? `<div class="post-card__img-wrap">
+         <img src="${escapeHTML(post.image_url)}" class="post-card__img" alt="post image" loading="lazy"/>
+       </div>`
+    : '';
+
   article.innerHTML = `
     <div class="post-card__header">
       <span class="post-card__author">@${escapeHTML(post.nickname)}</span>
@@ -80,20 +145,35 @@ function buildPostCard(post) {
     </div>
     <div class="post-card__body">
       <h3 class="post-card__title">${escapeHTML(post.title)}</h3>
-      <p class="post-card__content">${escapeHTML(post.content)}</p>
+      ${post.content ? `<p class="post-card__content">${escapeHTML(post.content)}</p>` : ''}
+      ${imgHTML}
     </div>
     <div class="post-card__footer">
       <button class="vote-btn vote-btn--up ${upActive}" data-value="1">
-        👍 <span class="vote-count">${post.upvotes}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        <span class="vote-count">${post.upvotes}</span>
       </button>
       <button class="vote-btn vote-btn--down ${downActive}" data-value="-1">
-        👎 <span class="vote-count">${post.downvotes}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="vote-count">${post.downvotes}</span>
       </button>
-      <span class="post-card__comments-hint">💬 click to read & comment</span>
+      <span class="post-card__comments-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        click to comment
+      </span>
     </div>`;
 
+  
+  const imgEl = article.querySelector('.post-card__img');
+  if (imgEl) {
+    imgEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openLightbox(post.image_url);
+    });
+  }
+
   article.addEventListener('click', (e) => {
-    if (!e.target.closest('.vote-btn')) {
+    if (!e.target.closest('.vote-btn') && !e.target.closest('.post-card__img-wrap')) {
       openPostDetail(post);
     }
   });
@@ -121,7 +201,7 @@ function buildPostCard(post) {
 
 async function submitVote(postID, value) {
   try {
-    const res  = await fetch('/api/votes', {
+    const res  = await authFetch('/api/votes', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({ post_id: postID, value }),
@@ -149,19 +229,20 @@ createPostForm.addEventListener('submit', async (e) => {
   if (categories.length === 0) {
     postCategoryError.textContent = 'Select at least one category.'; valid = false;
   }
-  if (!postContentInput.value.trim()) {
-    postContentError.textContent = 'Content is required.'; valid = false;
+  if (!postContentInput.value.trim() && !pendingPostImageURL) {
+    postContentError.textContent = 'Add content or an image.'; valid = false;
   }
   if (!valid) return;
 
   try {
-    const res = await fetch('/api/posts', {
+    const res = await authFetch('/api/posts', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({
         title     : postTitleInput.value.trim(),
         categories: categories,
         content   : postContentInput.value.trim(),
+        image_url : pendingPostImageURL || '',
       }),
     });
     const data = await res.json();
@@ -172,6 +253,7 @@ createPostForm.addEventListener('submit', async (e) => {
     postsFeed.prepend(buildPostCard(data));
     postsFeedEmpty.hidden = true;
     createPostForm.reset();
+    clearPostImagePreview();
   } catch {
     createPostError.textContent = 'Network error. Please try again.';
   }
@@ -234,4 +316,36 @@ function formatDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
     + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+
+function openLightbox(src) {
+  let lb = document.getElementById('img-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'img-lightbox';
+    lb.className = 'lightbox';
+    lb.innerHTML = `
+      <div class="lightbox__backdrop"></div>
+      <div class="lightbox__content">
+        <button class="lightbox__close" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <img class="lightbox__img" src="" alt="full size image"/>
+      </div>`;
+    document.body.appendChild(lb);
+    lb.querySelector('.lightbox__backdrop').addEventListener('click', closeLightbox);
+    lb.querySelector('.lightbox__close').addEventListener('click', closeLightbox);
+  }
+  lb.querySelector('.lightbox__img').src = src;
+  lb.classList.add('lightbox--open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('img-lightbox');
+  if (lb) lb.classList.remove('lightbox--open');
+  document.body.style.overflow = '';
 }

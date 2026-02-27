@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Real-Time Forum</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
 
     <!-- ═══════════════════════════════════════════
-         GLOBAL NAVBAR  (shown only when logged in)
+         GLOBAL NAVBAR
     ════════════════════════════════════════════ -->
     <nav id="main-navbar">
       <div id="navbar-brand">Real-Time Forum</div>
@@ -30,245 +30,118 @@
         <button type="button" id="logout-btn">Log Out</button>
       </div>
     </nav>
-    <!-- / main-navbar -->
 
 
     <!-- ═══════════════════════════════════════════
          LOGIN PAGE
     ════════════════════════════════════════════ -->
     <div id="login-page">
-
       <div id="login-card">
-
         <h1 id="login-title">Welcome Back</h1>
         <p id="login-subtitle">Sign in to your account</p>
-
         <form id="login-form" novalidate>
-
           <div class="form-group">
             <label for="login-identifier">Nickname or E-mail</label>
-            <input
-              type="text"
-              id="login-identifier"
-              name="identifier"
-              placeholder="your_nickname or you@example.com"
-              autocomplete="username"
-            />
+            <input type="text" id="login-identifier" name="identifier" placeholder="your_nickname or you@example.com" autocomplete="username"/>
             <span class="field-error" id="login-identifier-error"></span>
           </div>
-
           <div class="form-group">
             <label for="login-password">Password</label>
-            <input
-              type="password"
-              id="login-password"
-              name="password"
-              placeholder="Your password"
-              autocomplete="current-password"
-            />
+            <input type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password"/>
             <span class="field-error" id="login-password-error"></span>
           </div>
-
           <span class="form-error" id="login-form-error"></span>
-
           <button type="submit" id="login-submit-btn">Sign In</button>
-
         </form>
-
-        <p id="login-footer">
-          Don't have an account?
-          <a href="#" id="go-to-register">Create one</a>
-        </p>
-
+        <p id="login-footer">Don't have an account? <a href="#" id="go-to-register">Create one</a></p>
       </div>
-
     </div>
-    <!-- / login-page -->
 
 
     <!-- ═══════════════════════════════════════════
          REGISTRATION PAGE
     ════════════════════════════════════════════ -->
     <div id="register-page">
-
       <div id="register-card">
-
         <h1 id="register-title">Create Account</h1>
         <p id="register-subtitle">Join the community today</p>
-
         <form id="register-form" novalidate>
-
           <div class="form-group">
             <label for="register-nickname">Nickname</label>
-            <input
-              type="text"
-              id="register-nickname"
-              name="nickname"
-              placeholder="your_nickname"
-              autocomplete="username"
-            />
+            <input type="text" id="register-nickname" name="nickname" placeholder="your_nickname" autocomplete="username"/>
             <span class="field-error" id="register-nickname-error"></span>
           </div>
-
           <div class="form-row">
-
             <div class="form-group">
               <label for="register-firstname">First Name</label>
-              <input
-                type="text"
-                id="register-firstname"
-                name="firstname"
-                placeholder="John"
-                autocomplete="given-name"
-              />
+              <input type="text" id="register-firstname" name="firstname" placeholder="John" autocomplete="given-name"/>
               <span class="field-error" id="register-firstname-error"></span>
             </div>
-
             <div class="form-group">
               <label for="register-lastname">Last Name</label>
-              <input
-                type="text"
-                id="register-lastname"
-                name="lastname"
-                placeholder="Doe"
-                autocomplete="family-name"
-              />
+              <input type="text" id="register-lastname" name="lastname" placeholder="Doe" autocomplete="family-name"/>
               <span class="field-error" id="register-lastname-error"></span>
             </div>
-
           </div>
-
           <div class="form-group">
             <label for="register-email">E-mail</label>
-            <input
-              type="email"
-              id="register-email"
-              name="email"
-              placeholder="you@example.com"
-              autocomplete="email"
-            />
+            <input type="email" id="register-email" name="email" placeholder="you@example.com" autocomplete="email"/>
             <span class="field-error" id="register-email-error"></span>
           </div>
-
           <div class="form-group">
             <label for="register-age">Age</label>
-            <input
-              type="number"
-              id="register-age"
-              name="age"
-              placeholder="18"
-              min="13"
-              max="120"
-            />
+            <input type="number" id="register-age" name="age" placeholder="18" min="13" max="120"/>
             <span class="field-error" id="register-age-error"></span>
           </div>
-
           <div class="form-group">
             <label>Gender</label>
             <div id="register-gender-options">
-              <label class="radio-label">
-                <input type="radio" name="gender" value="male" /> Male
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="gender" value="female" /> Female
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="gender" value="other" /> Other
-              </label>
+              <label class="radio-label"><input type="radio" name="gender" value="male" /> Male</label>
+              <label class="radio-label"><input type="radio" name="gender" value="female" /> Female</label>
+              <label class="radio-label"><input type="radio" name="gender" value="other" /> Other</label>
             </div>
             <span class="field-error" id="register-gender-error"></span>
           </div>
-
           <div class="form-group">
             <label for="register-password">Password</label>
-            <input
-              type="password"
-              id="register-password"
-              name="password"
-              placeholder="Min 8 characters"
-              autocomplete="new-password"
-            />
+            <input type="password" id="register-password" name="password" placeholder="Min 8 characters" autocomplete="new-password"/>
             <span class="field-error" id="register-password-error"></span>
           </div>
-
           <div class="form-group">
             <label for="register-confirm-password">Confirm Password</label>
-            <input
-              type="password"
-              id="register-confirm-password"
-              name="confirm-password"
-              placeholder="Repeat your password"
-              autocomplete="new-password"
-            />
+            <input type="password" id="register-confirm-password" name="confirm-password" placeholder="Repeat your password" autocomplete="new-password"/>
             <span class="field-error" id="register-confirm-password-error"></span>
           </div>
-
           <span class="form-error" id="register-form-error"></span>
-
           <button type="submit" id="register-submit-btn">Create Account</button>
-
         </form>
-
-        <p id="register-footer">
-          Already have an account?
-          <a href="#" id="go-to-login">Sign in</a>
-        </p>
-
+        <p id="register-footer">Already have an account? <a href="#" id="go-to-login">Sign in</a></p>
       </div>
-
     </div>
-    <!-- / register-page -->
 
 
     <!-- ═══════════════════════════════════════════
-         MAIN APP  (shown only when logged in)
+         MAIN APP
     ════════════════════════════════════════════ -->
     <main id="app-page">
 
-      <!-- ── Online / Offline users sidebar ─────────────
-           Spec: "visible at all times" once logged in.
-           Sorted by last message, then alphabetically.
-      ──────────────────────────────────────────────── -->
       <aside id="online-users-sidebar" class="sidebar--collapsed">
         <h2 id="online-users-title">Users</h2>
-
-        <ul id="online-users-list">
-          <!--
-            JS injects <li> items here, each shaped like:
-            <li class="user-item" data-user-id="...">
-              <span class="status-dot status-dot--online / --offline"></span>
-              <span class="user-item__name">nickname</span>
-              <span class="user-item__badge" hidden>3</span>   unread count
-            </li>
-          -->
-        </ul>
+        <ul id="online-users-list"></ul>
       </aside>
-      <!-- / online-users-sidebar -->
 
-
-      <!-- ── Switchable content area ───────────────────── -->
       <div id="app-content">
 
-
-        <!-- ═══════════════════════════════════════════
-             POSTS FEED PAGE  (#posts-page)
-        ════════════════════════════════════════════ -->
+        <!-- ══ POSTS FEED ══ -->
         <section id="posts-page">
 
-          <!-- Create post panel -->
           <div id="create-post-panel">
             <h2 id="create-post-heading">Create a Post</h2>
-
             <form id="create-post-form" novalidate onsubmit="event.preventDefault()">
 
               <div class="form-group">
                 <label for="post-title">Title</label>
-                <input
-                  type="text"
-                  id="post-title"
-                  name="title"
-                  placeholder="Give your post a title..."
-                />
+                <input type="text" id="post-title" name="title" placeholder="Give your post a title..."/>
                 <span class="field-error" id="post-title-error"></span>
               </div>
 
@@ -289,25 +162,39 @@
 
               <div class="form-group">
                 <label for="post-content">Content</label>
-                <textarea
-                  id="post-content"
-                  name="content"
-                  placeholder="What's on your mind?"
-                  rows="4"
-                ></textarea>
+                <textarea id="post-content" name="content" placeholder="What's on your mind?" rows="4"></textarea>
                 <span class="field-error" id="post-content-error"></span>
               </div>
 
+              <!-- Post image attach -->
+              <div class="attach-row">
+                <input type="file" id="post-image-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+                <button type="button" id="post-image-btn" class="attach-btn" title="Attach image">
+                  <!-- Image / photo icon -->
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <span>Add photo</span>
+                </button>
+              </div>
+
+              <!-- Post image preview -->
+              <div id="post-image-preview" class="img-preview-wrap" hidden>
+                <img id="post-image-preview-img" src="" alt="preview" class="img-preview"/>
+                <button type="button" id="post-image-remove-btn" class="img-preview-remove" title="Remove image" aria-label="Remove image">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+
               <span class="form-error" id="create-post-error"></span>
-
               <button type="submit" id="create-post-submit" class="btn btn--primary">Publish Post</button>
-
             </form>
           </div>
-          <!-- / create-post-panel -->
 
-
-          <!-- Category filter bar -->
           <nav id="posts-filter-bar" aria-label="Filter posts">
             <button class="filter-btn filter-btn--active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="mine">My Posts</button>
@@ -323,145 +210,158 @@
             <button class="filter-btn" data-category="travel">Travel</button>
           </nav>
 
-
-          <!-- Posts feed — JS injects post cards here -->
           <div id="posts-feed">
-            <!--
-              JS injects <article class="post-card" data-post-id="..."> items.
-              Clicking a card navigates to #post-detail-page.
-            -->
             <p id="posts-feed-empty" hidden>No posts yet — be the first!</p>
           </div>
 
         </section>
-        <!-- / posts-page -->
 
 
-        <!-- ═══════════════════════════════════════════
-             SINGLE POST + COMMENTS  (#post-detail-page)
-             Shown when user clicks a post card.
-        ════════════════════════════════════════════ -->
+        <!-- ══ POST DETAIL ══ -->
         <section id="post-detail-page">
-
           <button type="button" id="back-to-posts-btn">&larr; Back to Posts</button>
-
-          <!-- Full post content — JS fills this -->
-          <article id="post-detail-content">
-            <!--
-              JS renders:
-                <header>  author avatar + name + date + category badge  </header>
-                <h1>      post title                                     </h1>
-                <p>       post body                                      </p>
-            -->
-          </article>
-
-
-          <!-- Comments section -->
+          <article id="post-detail-content"></article>
           <section id="comments-section">
-
             <h3 id="comments-heading">Comments</h3>
-
-            <!-- Add comment form -->
             <form id="add-comment-form" novalidate onsubmit="event.preventDefault()">
               <div class="form-group">
                 <label for="comment-input">Write a comment</label>
-                <textarea
-                  id="comment-input"
-                  name="comment"
-                  placeholder="Share your thoughts..."
-                  rows="3"
-                ></textarea>
+                <textarea id="comment-input" name="comment" placeholder="Share your thoughts..." rows="3"></textarea>
                 <span class="field-error" id="comment-input-error"></span>
               </div>
+              <button type="submit" class="comment-submit-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Post Comment
+              </button>
             </form>
-
-            <!-- Comments list — JS injects comment items here -->
             <div id="comments-list">
-              <!--
-                JS renders:
-                  <div class="comment" data-comment-id="...">
-                    <span class="comment__author">nickname</span>
-                    <span class="comment__date">date</span>
-                    <p class="comment__text">body</p>
-                  </div>
-              -->
               <p id="comments-empty" hidden>No comments yet — start the conversation!</p>
             </div>
-
           </section>
-          <!-- / comments-section -->
-
         </section>
-        <!-- / post-detail-page -->
 
 
-        <!-- ═══════════════════════════════════════════
-             CHAT / PRIVATE MESSAGES  (#chat-panel)
-             Opened when a user is clicked in the sidebar.
-        ════════════════════════════════════════════ -->
+        <!-- ══ CHAT PANEL ══ -->
         <section id="chat-panel">
 
-          <!-- No conversation selected yet -->
           <div id="chat-placeholder">
-            <span id="chat-placeholder-icon">💬</span>
+            <span id="chat-placeholder-icon">
+              <!-- chat bubble SVG instead of emoji -->
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </span>
             <p>Select a user from the sidebar to start chatting</p>
           </div>
 
-          <!-- Active conversation (hidden until a user is selected) -->
           <div id="chat-conversation">
 
-            <!-- Conversation header -->
             <header id="chat-conversation-header">
               <button type="button" id="chat-back-btn">&larr;</button>
               <span id="chat-partner-status" class="status-dot"></span>
               <strong id="chat-partner-name"></strong>
             </header>
 
-            <!-- Scrollable messages area
-                 Scroll-up triggers throttled load of 10 older messages -->
             <div id="chat-messages-area">
-              <div id="chat-load-more-trigger">
-                <!-- JS inserts a sentinel element here for IntersectionObserver -->
+              <div id="chat-load-more-trigger"></div>
+              <div id="chat-load-more-spinner" hidden>
+                <span class="chat-spinner"></span>
+                <span class="chat-spinner__label">Loading messages…</span>
               </div>
               <p id="chat-no-more-messages" hidden>Beginning of conversation</p>
-              <!--
-                JS renders:
-                  <div class="chat-msg chat-msg--mine / --theirs" data-msg-id="...">
-                    <span class="chat-msg__author">nickname</span>
-                    <p   class="chat-msg__text">body</p>
-                    <time class="chat-msg__date">HH:MM · DD MMM YYYY</time>
-                  </div>
-              -->
             </div>
 
-            <!-- Message input -->
+            <!-- Chat input row -->
             <form id="chat-input-form" novalidate onsubmit="event.preventDefault()">
-              <textarea
-                id="chat-input"
-                name="message"
-                placeholder="Type a message…"
-                rows="1"
-              ></textarea>
-              <button type="submit" id="chat-send-btn" aria-label="Send message">Send</button>
+
+              <!-- Hidden file input -->
+              <input type="file" id="chat-image-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+
+              <!-- Image attach button -->
+              <button type="button" id="chat-image-btn" class="chat-attach-btn" title="Attach image" aria-label="Attach image">
+                <!-- Photo / image icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+
+              <div class="chat-input-col">
+                <!-- Image preview above input -->
+                <div id="chat-image-preview" class="chat-img-preview-wrap" hidden>
+                  <img id="chat-image-preview-img" src="" alt="preview" class="chat-img-preview"/>
+                  <button type="button" id="chat-image-remove-btn" class="chat-img-remove" title="Remove" aria-label="Remove image">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <textarea id="chat-input" name="message" placeholder="Type a message…" rows="1"></textarea>
+              </div>
+
+              <button type="submit" id="chat-send-btn" aria-label="Send message">
+                <!-- Send / paper-plane icon -->
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+
             </form>
 
           </div>
-          <!-- / chat-conversation -->
 
         </section>
-        <!-- / chat-panel -->
-
 
       </div>
-      <!-- / app-content -->
-
     </main>
-    <!-- / app-page -->
+
+
+    <!-- ═══════════════════════════════════════════
+         SERVER UNAVAILABLE OVERLAY
+    ════════════════════════════════════════════ -->
+    <div id="server-error-overlay" hidden>
+      <div id="server-error-box">
+        <div id="server-error-icon">
+          <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h2 id="server-error-title">Server Unavailable</h2>
+        <p id="server-error-msg">Could not connect to the backend server.<br/>Make sure the server is running on port&nbsp;5500, then click Retry.</p>
+        <button id="server-error-retry">Retry Connection</button>
+      </div>
+    </div>
 
 
     <script>
-      // ── Page router ─────────────────────────────────────
-      // Call showPage('login' | 'register' | 'app') from any JS file.
+      function showServerError(msg) {
+        const overlay = document.getElementById('server-error-overlay');
+        if (msg) document.getElementById('server-error-msg').textContent = msg;
+        overlay.removeAttribute('hidden');
+      }
+
+      document.getElementById('server-error-retry').addEventListener('click', () => {
+        window.location.reload();
+      });
+
+      function authFetch(url, opts = {}) {
+        const token = sessionStorage.getItem('token');
+        opts.headers = Object.assign({}, opts.headers);
+        if (token) opts.headers['X-Session-Token'] = token;
+        return fetch(url, opts).catch(err => {
+          if (err instanceof TypeError) showServerError();
+          throw err;
+        });
+      }
+
       const pages = {
         login   : document.getElementById('login-page'),
         register: document.getElementById('register-page'),
@@ -471,7 +371,7 @@
 
       function showPage(name) {
         Object.values(pages).forEach(p => p.style.display = 'none');
-        pages[name].style.display = (name === 'app') ? 'flex' : 'flex';
+        pages[name].style.display = 'flex';
         navbar.style.display = (name === 'app') ? 'flex' : 'none';
         document.body.style.overflow = (name === 'app') ? 'hidden' : 'auto';
         if (name === 'app') {
@@ -480,7 +380,6 @@
         }
       }
 
-      // On first load: restore session or show login
       const saved = sessionStorage.getItem('user');
       if (saved) {
         document.getElementById('navbar-username').textContent = JSON.parse(saved).nickname;
@@ -497,6 +396,17 @@
     <script src="Chat.js"></script>
     <script>
       if (sessionStorage.getItem('user')) loadPosts();
+
+      // Health check — show the error overlay immediately if the backend is unreachable
+      (async () => {
+        try {
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), 4000);
+          await fetch('/api/posts', { signal: ctrl.signal });
+        } catch {
+          showServerError();
+        }
+      })();
     </script>
   </body>
 </html>
