@@ -67,7 +67,7 @@ function openPostDetail(post) {
 
 async function loadComments(postID) {
   try {
-    const res  = await authFetch(`/api/comments?post_id=${encodeURIComponent(postID)}`);
+    const res  = await authFetch(`${API_BASE}/api/comments?post_id=${encodeURIComponent(postID)}`);
     const data = await res.json();
 
     if (!res.ok) return;
@@ -107,7 +107,7 @@ addCommentForm.addEventListener('submit', async (e) => {
   if (!activePost) return;
 
   try {
-    const res = await authFetch('/api/comments', {
+    const res = await authFetch(`${API_BASE}/api/comments`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({

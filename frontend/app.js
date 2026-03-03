@@ -1,3 +1,8 @@
+/* ════════════════════════════════════════════════════
+   0. BACKEND BASE URL  (Render deployment)
+════════════════════════════════════════════════════ */
+const API_BASE = 'https://forum-backend.onrender.com';
+
 /*
  * app.js  –  Injects content into the structural containers defined in
  *            index.html, then defines global utilities used by all modules.

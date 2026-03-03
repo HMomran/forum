@@ -59,7 +59,7 @@ async function uploadImage(file) {
   const form = new FormData();
   form.append('image', file);
   try {
-    const res = await authFetch('/api/upload', { method: 'POST', body: form });
+    const res = await authFetch(`${API_BASE}/api/upload`, { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok) {
       alert(data.error || 'Upload failed');
@@ -88,7 +88,7 @@ async function loadPosts() {
   postsFeed.innerHTML   = '';
   postsFeedEmpty.hidden = true;
 
-  let url = '/api/posts';
+  let url = `${API_BASE}/api/posts`;
   if (activeSpecialFilter === 'mine' || activeSpecialFilter === 'liked') {
     url += `?filter=${activeSpecialFilter}`;
   } else if (activeCategories.size > 0) {
@@ -201,7 +201,7 @@ function buildPostCard(post) {
 
 async function submitVote(postID, value) {
   try {
-    const res  = await authFetch('/api/votes', {
+    const res  = await authFetch(`${API_BASE}/api/votes`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({ post_id: postID, value }),
@@ -235,7 +235,7 @@ createPostForm.addEventListener('submit', async (e) => {
   if (!valid) return;
 
   try {
-    const res = await authFetch('/api/posts', {
+    const res = await authFetch(`${API_BASE}/api/posts`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({

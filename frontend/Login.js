@@ -35,7 +35,7 @@ loginForm.addEventListener('submit', async (e) => {
   };
 
   try {
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${API_BASE}/api/login`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify(payload),
@@ -74,7 +74,7 @@ goToRegisterLink.addEventListener('click', (e) => {
 
 logoutBtn.addEventListener('click', async () => {
   try {
-    await authFetch('/api/logout', { method: 'POST' });
+    await authFetch(`${API_BASE}/api/logout`, { method: 'POST' });
   } catch { /* ignore */ }
 
   sessionStorage.removeItem('user');

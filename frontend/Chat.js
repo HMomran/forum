@@ -87,8 +87,7 @@ function connectWS() {
   if (ws && ws.readyState < 2) return;
 
   const token = sessionStorage.getItem('token') || '';
-  const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(`${wsProto}://${location.host}/ws?token=${encodeURIComponent(token)}`);
+  ws = new WebSocket(`${API_BASE.replace(/^https/, 'wss').replace(/^http/, 'ws')}/ws?token=${encodeURIComponent(token)}`);
 
   ws.onopen = () => {
     console.log('[WS] connected');
@@ -257,7 +256,7 @@ async function loadMessages(partnerID, offset, initial = false) {
   if (!initial) chatLoadSpinner.hidden = false;
 
   try {
-    const res  = await authFetch(`/api/messages?with=${encodeURIComponent(partnerID)}&offset=${offset}`);
+    const res  = await authFetch(`${API_BASE}/api/messages?with=${encodeURIComponent(partnerID)}&offset=${offset}`);
     const data = await res.json();
 
     if (!res.ok || !Array.isArray(data)) return;
@@ -409,7 +408,7 @@ async function uploadImage(file) {
   const form = new FormData();
   form.append('image', file);
   try {
-    const res = await authFetch('/api/upload', { method: 'POST', body: form });
+    const res = await authFetch(`${API_BASE}/api/upload`, { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok) {
       alert(data.error || 'Upload failed');

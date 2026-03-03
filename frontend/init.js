@@ -14,7 +14,7 @@ if (sessionStorage.getItem('user')) loadPosts();
   try {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 4000);
-    await fetch('/api/posts', { signal: ctrl.signal });
+    await fetch(`${API_BASE}/api/posts`, { signal: ctrl.signal });
   } catch {
     showServerError();
   }
