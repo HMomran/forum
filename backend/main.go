@@ -35,7 +35,7 @@ func main() {
 	// Serve uploaded files
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
-	mux.Handle("/", http.FileServer(http.Dir("../")))
+	mux.Handle("/", http.FileServer(http.Dir("../frontend/")))
 
 	log.Println("server running → http://localhost:5500")
 	log.Fatal(http.ListenAndServe(":5500", cors(mux)))
