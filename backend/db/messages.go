@@ -54,6 +54,24 @@ func GetMessageByID(msgID string) (models.Message, error) {
 	return m, err
 }
 
+// GetUnreadCount returns the number of unread messages sent by senderID to receiverID.
+func GetUnreadCount(receiverID, senderID string) int {
+	var count int
+	DB.QueryRow(
+		`SELECT COUNT(*) FROM messages WHERE receiver_id = ? AND sender_id = ? AND read = 0`,
+		receiverID, senderID,
+	).Scan(&count)
+	return count
+}
+
+// MarkMessagesRead marks all messages from senderID to receiverID as read.
+func MarkMessagesRead(receiverID, senderID string) {
+	DB.Exec(
+		`UPDATE messages SET read = 1 WHERE receiver_id = ? AND sender_id = ? AND read = 0`,
+		receiverID, senderID,
+	)
+}
+
 // GetLastMessageTimeBetween returns the created_at of the most recent message between
 // two users. Returns "" if no messages exist.
 func GetLastMessageTimeBetween(userID1, userID2 string) string {

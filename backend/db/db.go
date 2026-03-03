@@ -89,14 +89,13 @@ func createTables() {
 	}
 }
 
-
-
 func migrate() {
 	migrations := []string{
 		`ALTER TABLE messages ADD COLUMN image_url TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE posts    ADD COLUMN image_url TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE messages ADD COLUMN read INTEGER NOT NULL DEFAULT 0`,
 	}
 	for _, q := range migrations {
-		DB.Exec(q) 
+		DB.Exec(q)
 	}
 }

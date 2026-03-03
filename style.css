@@ -63,15 +63,16 @@ a:hover {
   display: none;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
-  height: 58px;
+  padding: 0 1.25rem;
+  height: 52px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 2px 12px rgba(0, 0, 0, .3);
   flex-shrink: 0;
+  gap: .6rem;
 }
 
 #navbar-brand {
@@ -136,6 +137,22 @@ a:hover {
 }
 
 #nav-messages-badge[hidden] {
+  display: none;
+}
+
+#nav-online-count {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--success);
+  background: rgba(88, 195, 34, .12);
+  border: 1px solid rgba(88, 195, 34, .25);
+  border-radius: 999px;
+  padding: .15rem .55rem;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+#nav-online-count[hidden] {
   display: none;
 }
 
@@ -362,7 +379,7 @@ a:hover {
 ═══════════════════════════════════════════════════════ */
 #app-page {
   display: flex;
-  height: calc(100vh - 58px);
+  height: calc(100vh - 52px);
   overflow: hidden;
 }
 
@@ -376,16 +393,26 @@ a:hover {
   background: var(--surface);
   border-left: 1px solid var(--border);
   padding: 1.25rem .85rem;
-  transition: width .25s ease, padding .25s ease, opacity .25s ease;
+  transition: width .25s ease, padding .25s ease;
 }
 
-/* collapsed — squeeze to zero so content fills the space */
+/* collapsed — narrow strip showing only the expand chevron */
 #online-users-sidebar.sidebar--collapsed {
-  width: 0;
-  padding: 0;
-  opacity: 0;
+  width: 28px;
+  padding: .75rem 0;
   overflow: hidden;
-  border-left: none;
+}
+
+#online-users-sidebar.sidebar--collapsed #online-users-title,
+#online-users-sidebar.sidebar--collapsed #online-users-list {
+  display: none;
+}
+
+#online-users-sidebar.sidebar--collapsed #online-users-header {
+  justify-content: center;
+  border-bottom: none;
+  padding: 0;
+  margin-bottom: 0;
 }
 
 #online-users-title {
@@ -394,9 +421,33 @@ a:hover {
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+  padding: 0 .4rem;
+}
+
+#online-users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0 .4rem .6rem;
   border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+#sidebar-toggle-btn {
+  background: none;
+  border: none;
+  padding: .35rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  line-height: 0;
+  transition: color var(--transition), background var(--transition);
+  flex-shrink: 0;
+}
+#sidebar-toggle-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
 }
 
 #online-users-list {
@@ -607,6 +658,8 @@ a:hover {
   font-weight: 700;
   margin-bottom: .4rem;
   line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .post-card__content {
@@ -746,6 +799,8 @@ a:hover {
   font-weight: 700;
   line-height: 1.3;
   margin-bottom: .75rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .post-detail__body {
@@ -1069,13 +1124,17 @@ a:hover {
   color: var(--text);
 }
 
-.vote-btn--up.vote-btn--active {
+.vote-btn--up.vote-btn--active,
+.vote-btn--up.vote-btn--active:hover,
+.vote-btn--up.vote-btn--active:focus {
   background: rgba(52, 211, 153, .15);
   color: var(--success);
   border-color: var(--success);
 }
 
-.vote-btn--down.vote-btn--active {
+.vote-btn--down.vote-btn--active,
+.vote-btn--down.vote-btn--active:hover,
+.vote-btn--down.vote-btn--active:focus {
   background: rgba(248, 113, 113, .15);
   color: var(--danger);
   border-color: var(--danger);
@@ -1801,6 +1860,107 @@ a:hover {
 }
 
 /* ═══════════════════════════════════════════════════════
+   HTTP ERROR OVERLAY  (401 / 403 / 404 / 5xx)
+═══════════════════════════════════════════════════════ */
+#http-error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+#http-error-overlay[hidden] {
+  display: none !important;
+}
+
+#http-error-box {
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 3rem 2.5rem;
+  background: var(--surface);
+  border: 1px solid rgba(248, 113, 113, .35);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, .12), var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  animation: server-err-in .3s ease both;
+}
+
+/* 401 → amber tint */
+#http-error-overlay[data-code="401"] #http-error-box {
+  border-color: rgba(251, 191, 36, .4);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, .15), var(--shadow);
+}
+
+#http-error-icon {
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: .25rem;
+}
+
+#http-error-overlay[data-code="401"] #http-error-icon {
+  color: #fbbf24;
+}
+
+#http-error-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+#http-error-msg {
+  font-size: .9rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+  max-width: 360px;
+}
+
+#http-error-action {
+  margin-top: .5rem;
+  padding: .65rem 2.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition), transform .1s;
+  box-shadow: 0 2px 8px rgba(0, 149, 246, .35);
+}
+
+#http-error-overlay[data-code="401"] #http-error-action {
+  background: #fbbf24;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, .35);
+  color: #000;
+}
+
+#http-error-overlay[data-code="401"] #http-error-action:hover {
+  background: #f59e0b;
+}
+
+#http-error-action:hover {
+  background: var(--accent-h);
+  transform: translateY(-1px);
+}
+
+#http-error-action:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════
    ANIMATIONS & MOTION
 ═══════════════════════════════════════════════════════ */
 
@@ -1875,9 +2035,9 @@ a:hover {
   animation: vote-pop .18s ease;
 }
 @keyframes vote-pop {
-  0%  { transform: scale(1);   }
-  40% { transform: scale(.84); }
-  100%{ transform: scale(1);   }
+  0%  { opacity: 1;    }
+  40% { opacity: .55;  }
+  100%{ opacity: 1;    }
 }
 
 /* ── Unread badge bounce ──────────────────────────── */
@@ -1984,6 +2144,180 @@ a:hover {
 .filter-btn:nth-child(4) { animation-delay: .15s; }
 .filter-btn:nth-child(5) { animation-delay: .19s; }
 .filter-btn:nth-child(6) { animation-delay: .23s; }
+
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+
+/* ── Tablet: ≤ 900px ─────────────────────────────── */
+@media (max-width: 900px) {
+  #online-users-sidebar {
+    width: 200px;
+  }
+
+  #navbar-brand {
+    font-size: .95rem;
+  }
+
+  #nav-online-count {
+    display: none;
+  }
+}
+
+/* ── Mobile: ≤ 640px ─────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* ── Navbar ── */
+  #main-navbar {
+    padding: 0 .75rem;
+    height: 48px;
+    gap: .4rem;
+  }
+
+  #navbar-brand {
+    font-size: .88rem;
+  }
+
+  #navbar-links {
+    display: none;   /* hide Home link — use logo tap to go home */
+  }
+
+  #navbar-username {
+    display: none;   /* save space — user knows who they are */
+  }
+
+  #logout-btn {
+    font-size: .72rem;
+    padding: .25rem .6rem;
+  }
+
+  #nav-online-count {
+    display: none;
+  }
+
+  /* ── App layout: stack vertically ── */
+  #app-page {
+    height: calc(100vh - 48px);
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar becomes a fixed overlay from the right ── */
+  #online-users-sidebar {
+    position: fixed;
+    top: 48px;
+    right: 0;
+    bottom: 0;
+    width: 240px !important;
+    height: calc(100vh - 48px);
+    z-index: 150;
+    transform: translateX(0);
+    transition: transform .25s ease;
+    border-left: 1px solid var(--border);
+    padding: 1rem .75rem;
+    overflow-y: auto;
+  }
+
+  #online-users-sidebar.sidebar--collapsed {
+    transform: translateX(100%);
+    width: 240px !important;
+    padding: 1rem .75rem;
+    overflow-y: auto;
+  }
+
+  /* Restore header / list visibility on mobile (hidden only by width squeeze on desktop) */
+  #online-users-sidebar.sidebar--collapsed #online-users-title,
+  #online-users-sidebar.sidebar--collapsed #online-users-list {
+    display: flex;
+  }
+
+  #online-users-sidebar.sidebar--collapsed #online-users-title {
+    display: block;
+  }
+
+  #online-users-sidebar.sidebar--collapsed #online-users-header {
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding: 0 .4rem .6rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Content takes all remaining width ── */
+  #app-content {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* ── Posts page ── */
+  #posts-page {
+    padding: 1rem .75rem;
+  }
+
+  #create-post-panel {
+    padding: 1rem;
+  }
+
+  #create-post-heading {
+    font-size: 1rem;
+  }
+
+  .category-checkboxes {
+    gap: .3rem;
+  }
+
+  .check-label {
+    font-size: .78rem;
+    padding: .2rem .5rem;
+  }
+
+  #posts-filter-bar {
+    gap: .3rem;
+    padding: .5rem .75rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: .72rem;
+    padding: .3rem .6rem;
+  }
+
+  .post-card {
+    padding: .85rem;
+  }
+
+  /* ── Chat panel ── */
+  #chat-panel {
+    position: fixed;
+    inset: 48px 0 0 0;
+    z-index: 140;
+  }
+
+  /* ── Post detail ── */
+  #post-detail-page {
+    padding: 1rem .75rem;
+  }
+
+  /* ── Backdrop when sidebar is open on mobile ── */
+  #sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 48px 0 0 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: 149;
+  }
+
+  #sidebar-backdrop.visible {
+    display: block;
+  }
+}
 
 /* ── Respect reduced-motion preference ───────────── */
 @media (prefers-reduced-motion: reduce) {

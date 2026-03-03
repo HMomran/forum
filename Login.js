@@ -80,5 +80,32 @@ logoutBtn.addEventListener('click', async () => {
   sessionStorage.removeItem('user');
   sessionStorage.removeItem('token');
   document.getElementById('navbar-username').textContent = '';
+
+  // Clear login form inputs and errors
+  identifierInput.value    = '';
+  loginPasswordInput.value = '';
+  clearLoginErrors();
+
+  // Clear registration form inputs and errors
+  const regForm = document.getElementById('register-form');
+  if (regForm) regForm.reset();
+  document.querySelectorAll('#register-page .field-error, #register-page .form-error')
+    .forEach(el => { el.textContent = ''; });
+
+  // Close the WebSocket NOW so the server removes this user from hub.clients
+  // and immediately broadcasts their offline status to all other connected users.
+  if (typeof disconnectWS === 'function') disconnectWS();
+
+  // Reset chat state so re-login always starts fresh
+  if (typeof activePartner !== 'undefined') {
+    // Defined in Chat.js scope — reset via DOM
+    const chatConv = document.getElementById('chat-conversation');
+    const chatPh   = document.getElementById('chat-placeholder');
+    const chatPnl  = document.getElementById('chat-panel');
+    if (chatConv) chatConv.style.display = 'none';
+    if (chatPh)   chatPh.style.display   = '';
+    if (chatPnl)  chatPnl.style.display  = 'none';
+  }
+
   showPage('login');
 });

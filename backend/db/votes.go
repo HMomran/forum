@@ -37,7 +37,7 @@ func GetVoteSummary(postID, userID string) (upvotes, downvotes, userVote int) {
 		SELECT
 			COALESCE(SUM(CASE WHEN value =  1 THEN 1 ELSE 0 END), 0),
 			COALESCE(SUM(CASE WHEN value = -1 THEN 1 ELSE 0 END), 0),
-			COALESCE(MAX(CASE WHEN user_id = ? THEN value ELSE 0 END), 0)
+			COALESCE(SUM(CASE WHEN user_id = ? THEN value ELSE 0 END), 0)
 		FROM votes WHERE post_id = ?`, userID, postID,
 	).Scan(&upvotes, &downvotes, &userVote)
 	return

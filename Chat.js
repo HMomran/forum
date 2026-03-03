@@ -27,6 +27,7 @@ let loadingMore    = false;
 let noMoreMsgs     = false;
 let unread         = {};
 let userMap        = {};
+
 let chatInitialized = false;
 let pendingImageURL = null;
 let topSentinelObserver = null;
@@ -146,6 +147,22 @@ function renderUserList(users) {
 
   users.forEach(u => { userMap[u.id] = u; });
 
+  // Sync in-memory unread from server-authoritative counts
+  users.forEach(u => { unread[u.id] = u.unread_count || 0; });
+  updateNavBadge();
+
+  // Update online users count pill
+  const onlineCountEl = document.getElementById('nav-online-count');
+  if (onlineCountEl) {
+    const onlineCount = users.filter(u => u.online).length;
+    if (onlineCount > 0) {
+      onlineCountEl.textContent = onlineCount + ' online';
+      onlineCountEl.hidden = false;
+    } else {
+      onlineCountEl.hidden = true;
+    }
+  }
+
   onlineUsersList.innerHTML = '';
 
   users.forEach(u => {
@@ -177,7 +194,13 @@ function renderUserList(users) {
 
   if (activePartner && userMap[activePartner.id]) {
     const updated = userMap[activePartner.id];
+    activePartner = updated; // keep online flag in sync
     chatPartnerStatus.className = 'status-dot ' + (updated.online ? 'status-dot--online' : 'status-dot--offline');
+    const offline = !updated.online;
+    chatInput.disabled        = offline;
+    chatInput.placeholder     = offline ? `${updated.nickname} is offline — you can't send messages` : 'Type a message…';
+    document.getElementById('chat-send-btn').disabled = offline;
+    chatImageBtn.disabled     = offline;
   }
 }
 
@@ -187,8 +210,14 @@ async function openChat(user) {
   loadingMore    = false;
   noMoreMsgs     = false;
 
+  // Collapse the sidebar when opening a conversation
+  if (typeof window._sidebarApplyState === 'function') window._sidebarApplyState(true);
+
   unread[user.id] = 0;
   updateNavBadge();
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'mark_read', payload: { sender_id: user.id } }));
+  }
   chatPartnerName.textContent    = user.nickname;
   chatPartnerStatus.className    = 'status-dot ' + (user.online ? 'status-dot--online' : 'status-dot--offline');
   chatPlaceholder.style.display  = 'none';
@@ -198,7 +227,13 @@ async function openChat(user) {
   chatNoMore.hidden      = true;
   chatLoadSpinner.hidden = true;
 
-  
+  // Disable input if user is offline
+  const offline = !user.online;
+  chatInput.disabled          = offline;
+  chatInput.placeholder       = offline ? `${user.nickname} is offline — you can't send messages` : 'Type a message…';
+  document.getElementById('chat-send-btn').disabled = offline;
+  chatImageBtn.disabled       = offline;
+
   clearChatImagePreview();
 
   showAppSection('chat');
@@ -426,6 +461,10 @@ function handleIncomingMessage(msg) {
   ) {
     chatMessagesArea.appendChild(buildMessage(msg, me.id));
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+    // Mark as read immediately since we're looking at the conversation
+    if (ws && ws.readyState === 1 && String(msg.sender_id) !== String(me.id)) {
+      ws.send(JSON.stringify({ type: 'mark_read', payload: { sender_id: msg.sender_id } }));
+    }
   } else if (String(msg.sender_id) !== String(me.id)) {
     const sid = String(msg.sender_id);
     unread[sid] = (unread[sid] || 0) + 1;
@@ -461,6 +500,9 @@ chatInputForm.addEventListener('submit', (e) => {
   if (!text && !pendingImageURL) return;
   if (!activePartner || !ws || ws.readyState !== 1) return;
 
+  // Block sending to offline users
+  if (!activePartner.online) return;
+
   ws.send(JSON.stringify({
     type   : 'send_message',
     payload: {
@@ -483,7 +525,7 @@ chatInput.addEventListener('input', () => {
 chatInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    chatInputForm.dispatchEvent(new Event('submit'));
+    chatInputForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   }
 });
 
@@ -524,17 +566,66 @@ function initChat() {
   connectWS();
 }
 
-if (navMessagesBtn && sidebar) {
-  // Sidebar starts collapsed — button is not active by default
-  navMessagesBtn.classList.toggle('active', !sidebar.classList.contains('sidebar--collapsed'));
+// Called by logout handler — closes WS immediately so the server removes us
+// from hub.clients and broadcasts our offline status to all other users.
+function disconnectWS() {
+  if (ws) {
+    const dying = ws;
+    ws = null;            // prevent onclose from reconnecting
+    chatInitialized = false;
+    dying.close();
+  }
+}
 
-  // Toggle button collapses / expands the sidebar
+if (navMessagesBtn) {
   navMessagesBtn.addEventListener('click', () => {
-    const collapsed = sidebar.classList.toggle('sidebar--collapsed');
-    navMessagesBtn.classList.toggle('active', !collapsed);
+    if (typeof window._sidebarApplyState === 'function') {
+      const sidebar = document.getElementById('online-users-sidebar');
+      window._sidebarApplyState(!sidebar.classList.contains('sidebar--collapsed'));
+    }
   });
 }
 
 if (sessionStorage.getItem('user')) {
   connectWS();
 }
+
+// Sidebar collapse / expand
+(function () {
+  const sidebarEl  = document.getElementById('online-users-sidebar');
+  const toggleBtn  = document.getElementById('sidebar-toggle-btn');
+  const toggleIcon = document.getElementById('sidebar-toggle-icon');
+  const backdrop   = document.getElementById('sidebar-backdrop');
+  if (!sidebarEl || !toggleBtn) return;
+
+  const OPEN_POLY  = 'M15 18 9 12 15 6';   // ‹ chevron (collapse)
+  const CLOSE_POLY = 'M9 18 15 12 9 6';    // › chevron (expand)
+
+  function isMobile() { return window.innerWidth <= 640; }
+
+  function applyState(collapsed) {
+    sidebarEl.classList.toggle('sidebar--collapsed', collapsed);
+    if (toggleIcon) toggleIcon.querySelector('polyline').setAttribute('points', collapsed ? CLOSE_POLY : OPEN_POLY);
+    toggleBtn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    // On mobile the sidebar is an overlay — show/hide backdrop
+    if (backdrop) backdrop.classList.toggle('visible', !collapsed && isMobile());
+  }
+  window._sidebarApplyState = applyState;
+
+  // On mobile start collapsed so the content isn't covered; open on desktop
+  applyState(isMobile());
+
+  toggleBtn.addEventListener('click', () => {
+    applyState(!sidebarEl.classList.contains('sidebar--collapsed'));
+  });
+
+  // Close sidebar when backdrop is tapped on mobile
+  if (backdrop) {
+    backdrop.addEventListener('click', () => applyState(true));
+  }
+
+  // On resize from mobile → desktop, hide backdrop
+  window.addEventListener('resize', () => {
+    if (!isMobile() && backdrop) backdrop.classList.remove('visible');
+  });
+}());

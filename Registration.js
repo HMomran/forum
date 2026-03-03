@@ -40,9 +40,15 @@ function validate() {
   if (!firstNameInput.value.trim()) {
     errors.firstname.textContent = 'First name is required.';
     valid = false;
+  } else if (/\d/.test(firstNameInput.value.trim())) {
+    errors.firstname.textContent = 'First name must not contain numbers.';
+    valid = false;
   }
   if (!lastNameInput.value.trim()) {
     errors.lastname.textContent = 'Last name is required.';
+    valid = false;
+  } else if (/\d/.test(lastNameInput.value.trim())) {
+    errors.lastname.textContent = 'Last name must not contain numbers.';
     valid = false;
   }
   if (!emailInput.value.trim()) {

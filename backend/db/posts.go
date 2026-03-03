@@ -12,7 +12,7 @@ const postSelectBase = `
 		p.id, p.user_id, u.nickname, p.title, p.content, p.category, p.image_url, p.created_at,
 		COALESCE(SUM(CASE WHEN v.value =  1 THEN 1 ELSE 0 END), 0) AS upvotes,
 		COALESCE(SUM(CASE WHEN v.value = -1 THEN 1 ELSE 0 END), 0) AS downvotes,
-		COALESCE(MAX(CASE WHEN v.user_id = ? THEN v.value ELSE 0 END), 0) AS user_vote
+		COALESCE(SUM(CASE WHEN v.user_id = ? THEN v.value ELSE 0 END), 0) AS user_vote
 	FROM posts p
 	JOIN users u ON u.id = p.user_id
 	LEFT JOIN votes v ON v.post_id = p.id`
@@ -29,7 +29,6 @@ func scanPosts(rows *sql.Rows) ([]models.Post, error) {
 	return posts, nil
 }
 
-
 func ListAllPosts(viewerID, orderBy string) ([]models.Post, error) {
 	rows, err := DB.Query(postSelectBase+` GROUP BY p.id ORDER BY `+orderBy, viewerID)
 	if err != nil {
@@ -37,7 +36,6 @@ func ListAllPosts(viewerID, orderBy string) ([]models.Post, error) {
 	}
 	return scanPosts(rows)
 }
-
 
 func ListMinePosts(viewerID, orderBy string) ([]models.Post, error) {
 	rows, err := DB.Query(
@@ -50,7 +48,6 @@ func ListMinePosts(viewerID, orderBy string) ([]models.Post, error) {
 	return scanPosts(rows)
 }
 
-
 func ListLikedPosts(viewerID, orderBy string) ([]models.Post, error) {
 	rows, err := DB.Query(
 		postSelectBase+` WHERE EXISTS (SELECT 1 FROM votes lv WHERE lv.post_id = p.id AND lv.user_id = ? AND lv.value = 1) GROUP BY p.id ORDER BY `+orderBy,
@@ -61,7 +58,6 @@ func ListLikedPosts(viewerID, orderBy string) ([]models.Post, error) {
 	}
 	return scanPosts(rows)
 }
-
 
 func ListPostsByCategories(viewerID string, cats []string, orderBy string) ([]models.Post, error) {
 	args := []any{viewerID}
@@ -86,7 +82,6 @@ func ListPostsByCategories(viewerID string, cats []string, orderBy string) ([]mo
 	return scanPosts(rows)
 }
 
-
 func CreatePost(id, userID, title, content, category, imageURL string) error {
 	_, err := DB.Exec(
 		`INSERT INTO posts (id, user_id, title, content, category, image_url) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -94,7 +89,6 @@ func CreatePost(id, userID, title, content, category, imageURL string) error {
 	)
 	return err
 }
-
 
 func GetPostByID(postID string) (models.Post, error) {
 	var p models.Post
@@ -107,13 +101,11 @@ func GetPostByID(postID string) (models.Post, error) {
 	return p, err
 }
 
-
 func GetPostOwnerID(postID string) (string, error) {
 	var ownerID string
 	err := DB.QueryRow(`SELECT user_id FROM posts WHERE id = ?`, postID).Scan(&ownerID)
 	return ownerID, err
 }
-
 
 func DeletePostCascade(postID string) error {
 	DB.Exec(`DELETE FROM votes    WHERE post_id = ?`, postID)

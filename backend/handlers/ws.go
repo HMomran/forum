@@ -109,6 +109,8 @@ func (c *Client) readPump() {
 		switch msg.Type {
 		case "send_message":
 			c.handleSendMessage(msg.Payload)
+		case "mark_read":
+			c.handleMarkRead(msg.Payload)
 		}
 	}
 }
@@ -171,11 +173,24 @@ func (c *Client) handleSendMessage(raw json.RawMessage) {
 	broadcastPresence()
 }
 
+func (c *Client) handleMarkRead(raw json.RawMessage) {
+	var p struct {
+		SenderID string `json:"sender_id"`
+	}
+	if err := json.Unmarshal(raw, &p); err != nil || p.SenderID == "" {
+		return
+	}
+	db.MarkMessagesRead(c.userID, p.SenderID)
+	// Refresh this client's user list so badge clears immediately
+	sendUserList(c)
+}
+
 type UserStatus struct {
-	ID       string `json:"id"`
-	Nickname string `json:"nickname"`
-	Online   bool   `json:"online"`
-	LastMsg  string `json:"last_msg"`
+	ID          string `json:"id"`
+	Nickname    string `json:"nickname"`
+	Online      bool   `json:"online"`
+	LastMsg     string `json:"last_msg"`
+	UnreadCount int    `json:"unread_count"`
 }
 
 func broadcastPresence() {
@@ -227,10 +242,11 @@ func sendUserList(c *Client) {
 	var users []UserStatus
 	for _, u := range usersFromDB {
 		users = append(users, UserStatus{
-			ID:       u.ID,
-			Nickname: u.Nickname,
-			Online:   onlineIDs[u.ID],
-			LastMsg:  db.GetLastMessageTimeBetween(c.userID, u.ID),
+			ID:          u.ID,
+			Nickname:    u.Nickname,
+			Online:      onlineIDs[u.ID],
+			LastMsg:     db.GetLastMessageTimeBetween(c.userID, u.ID),
+			UnreadCount: db.GetUnreadCount(c.userID, u.ID),
 		})
 	}
 
