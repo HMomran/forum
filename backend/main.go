@@ -3,44 +3,51 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"real-time-forum/db"
 	"real-time-forum/handlers"
 )
 
 func main() {
+	// Use absolute path to DB in Render
 	db.Init("./forum.db")
 
 	mux := http.NewServeMux()
 
+	// API routes
 	mux.HandleFunc("/api/register", handlers.Register)
 	mux.HandleFunc("/api/login", handlers.Login)
 	mux.HandleFunc("/api/logout", handlers.Logout)
-
 	mux.HandleFunc("/api/posts", handlers.Posts)
 	mux.HandleFunc("/api/posts/delete", handlers.DeletePost)
-
 	mux.HandleFunc("/api/comments", handlers.Comments)
 	mux.HandleFunc("/api/comments/delete", handlers.DeleteComment)
-
 	mux.HandleFunc("/api/votes", handlers.Vote)
-
 	mux.HandleFunc("/api/messages", handlers.Messages)
 	mux.HandleFunc("/api/users", handlers.Users)
-
 	mux.HandleFunc("/api/upload", handlers.Upload)
 
+	// WebSocket
 	mux.HandleFunc("/ws", handlers.ServeWS)
 
 	// Serve uploaded files
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
-	mux.Handle("/", http.FileServer(http.Dir("../frontend/")))
+	// Optional: serve frontend if you include build in repo
+	// mux.Handle("/", http.FileServer(http.Dir("./frontend/dist/")))
 
-	log.Println("server running → http://localhost:5500")
-	log.Fatal(http.ListenAndServe(":5500", cors(mux)))
+	// Get port from Render environment variable
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5500" // fallback for local testing
+	}
+
+	log.Printf("Server running on port %s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, cors(mux)))
 }
 
+// CORS middleware
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
