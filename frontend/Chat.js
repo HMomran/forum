@@ -87,7 +87,7 @@ function connectWS() {
   if (ws && ws.readyState < 2) return;
 
   const token = sessionStorage.getItem('token') || '';
-  ws = new WebSocket(`${API_BASE.replace(/^https/, 'wss').replace(/^http/, 'ws')}/ws?token=${encodeURIComponent(token)}`);
+  ws = new WebSocket(`wss://forum-da3w.onrender.com/ws?token=${encodeURIComponent(token)}`);
 
   ws.onopen = () => {
     console.log('[WS] connected');

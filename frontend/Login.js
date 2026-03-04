@@ -37,6 +37,7 @@ loginForm.addEventListener('submit', async (e) => {
   try {
     const res = await fetch(`${API_BASE}/api/login`, {
       method : 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify(payload),
     });

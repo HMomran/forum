@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════
    0. BACKEND BASE URL  (Render deployment)
 ════════════════════════════════════════════════════ */
-const API_BASE = 'https://forum-backend.onrender.com';
+const API_BASE = "https://forum-da3w.onrender.com";
 
 /*
  * app.js  –  Injects content into the structural containers defined in
@@ -420,6 +420,7 @@ document.getElementById('http-error-action').addEventListener('click', function 
 function authFetch(url, opts = {}) {
   const token = sessionStorage.getItem('token');
   opts.headers = Object.assign({}, opts.headers);
+  opts.credentials = 'include';
   if (token) opts.headers['X-Session-Token'] = token;
   return fetch(url, opts).then(res => {
     if (res.status === 401 && sessionStorage.getItem('user') && !url.includes('logout')) {
